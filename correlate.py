@@ -51,6 +51,7 @@ for col1, col2 in col_combinations:
 sorted_dict = [(k, results[k]) for k in sorted(results, key=results.get, reverse=True)]
 
 pprint.pprint(sorted_dict)
+# print(combined_df.corrwith(combined_df, axis=1))
 
 
 
