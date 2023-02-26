@@ -50,9 +50,13 @@ for col1, col2 in col_combinations:
 # sorted_dict = dict(sorted(results.items(), key=lambda item: item[1]))
 sorted_dict = [(k, results[k]) for k in sorted(results, key=results.get, reverse=True)]
 
-pprint.pprint(sorted_dict)
+# pprint.pprint(sorted_dict)
 # print(combined_df.corrwith(combined_df, axis=1))
 
+
+ax1 = combined_df.plot.scatter(
+        x='education_expenditures',
+        y='birth_rate')
 
 
 exit(0)
