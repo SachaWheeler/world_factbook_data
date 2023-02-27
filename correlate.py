@@ -25,37 +25,54 @@ for file in data_files:
 
     combined_df = pd.merge(combined_df, df, on='name', how='outer')
 
+regions = {
+    "Africa",
+    "Australia and Oceania",
+    "Central America and the Caribbean",
+    "Central Asia",
+    "East and Southeast Asia",
+    "Europe",
+    "Middle East",
+    "North America",
+    "South America",
+    "South Asia"
+}
+
 # add regions etc.
 region_df = pd.read_csv("more/regions.csv", usecols = ['name', 'region'])
 df = pd.merge(combined_df, region_df, on='name', how='outer')
+df['region'] = df['region'].astype('category')
+region_labels = df['region'].unique()
+pprint.pprint(region_labels)
 
 print(df)
+# exit(0)
 
 col_combinations = list(itertools.combinations(cols, 2))
-# pprint.pprint(col_combinations)
 
 results = {}
 for col1, col2 in col_combinations:
     try:
-        corr = combined_df[col1].corr(combined_df[col2])
+        corr = df[col1].corr(df[col2])
     except Exception as e:
         print(e)
         print(col1, col2)
-        print(combined_df[col1], combined_df[col2])
+        print(df[col1], df[col2])
         break
     if corr >= 0.9 or corr <= -0.9:
         pass
     ax = df.plot.scatter(
             x=col1,
             y=col2,
-            c='region',
-            colormap='viridis',
+            c=region_labels.map(df.region),
+            # cmap='viridis',
             s=50,
             figsize=(10,10))
     for idx, row in df.iterrows():
         ax.annotate(row['name'], (row[col1], row[col2]), fontsize=8 )
     plt.show()
     plt.close()
+    break
 
     # print(f"correlation between {col1} and {col2}: {corr:.2f}")
     results[(col1, col2)] = float(f"{corr:.2f}")
@@ -66,24 +83,8 @@ sorted_dict = [(k, results[k]) for k in sorted(results, key=results.get, reverse
 # pprint.pprint(sorted_dict)
 # exit(0)
 
-# print(combined_df.corrwith(combined_df, axis=1))
-
-
-df.plot.scatter(
-        x='infant_mortality_rate',
-        y='population',
-        s=50)
-plt.show()
-plt.close()
-
 print("Done.")
 
 
-# exit(0)
 
-"""
-ax1 = df.plot.scatter(
-        x='infant_mortality_rate',
-        y='population'
-        )
-"""
+
