@@ -25,7 +25,10 @@ for file in data_files:
 
     combined_df = pd.merge(combined_df, df, on='name', how='outer')
 
-df = combined_df
+# add regions etc.
+region_df = pd.read_csv("more/regions.csv", usecols = ['name', 'region'])
+df = pd.merge(combined_df, region_df, on='name', how='outer')
+
 print(df)
 
 col_combinations = list(itertools.combinations(cols, 2))
@@ -42,13 +45,15 @@ for col1, col2 in col_combinations:
         break
     if corr >= 0.9 or corr <= -0.9:
         pass
-    if True:
-        df.plot.scatter(
-                x=col1,
-                y=col2,
-                s=50)
-        plt.show()
-        plt.close()
+    ax = df.plot.scatter(
+            x=col1,
+            y=col2,
+            s=50,
+            figsize=(10,10))
+    for idx, row in df.iterrows():
+        ax.annotate(row['name'], (row[col1], row[col2]), fontsize=8 )
+    plt.show()
+    plt.close()
 
     # print(f"correlation between {col1} and {col2}: {corr:.2f}")
     results[(col1, col2)] = float(f"{corr:.2f}")
