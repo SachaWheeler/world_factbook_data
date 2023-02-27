@@ -3,6 +3,7 @@ import pprint
 import os
 import pandas as pd
 import numpy as np
+import random
 import matplotlib.pyplot as plt
 import itertools
 
@@ -28,7 +29,7 @@ for file in data_files:
 
 def region_code(row):
     region = row['region']
-    colours = ['red','orange','yellow','green','blue','indigo','violet','black','pink','grey']
+    colours = ['red','orange','yellow','green','lightblue','indigo','violet','black','pink','grey']
     regions = [
         'South Asia', 'Africa', 'Middle East', 'Central America and the Caribbean',
         'East and Southeast Asia', 'Central Asia', 'Australia and Oceania',
@@ -45,6 +46,7 @@ df['region_code'] = df.apply(lambda x : region_code(x), axis=1)
 
 
 col_combinations = list(itertools.combinations(cols, 2))
+random.shuffle(col_combinations)
 
 results = {}
 for col1, col2 in col_combinations:
@@ -55,19 +57,17 @@ for col1, col2 in col_combinations:
         print(col1, col2)
         print(df[col1], df[col2])
         break
-    if corr >= 0.9 or corr <= -0.9:
-        pass
     ax = df.plot.scatter(
+            title=f'{col2} vs {col1}\ncorrelation: {corr:.2f}',
             x=col1,
             y=col2,
-            c=(df.region_code),
-            s=50,
+            c=df.region_code,
+            s=df.population // 1_000_000,
             figsize=(10,10))
     for idx, row in df.iterrows():
         ax.annotate(row['name'], (row[col1], row[col2]), fontsize=8 )
     plt.show()
     plt.close()
-    # break
 
     # print(f"correlation between {col1} and {col2}: {corr:.2f}")
     results[(col1, col2)] = float(f"{corr:.2f}")
