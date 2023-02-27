@@ -48,6 +48,8 @@ for col1, col2 in col_combinations:
     ax = df.plot.scatter(
             x=col1,
             y=col2,
+            c='region',
+            colormap='viridis',
             s=50,
             figsize=(10,10))
     for idx, row in df.iterrows():
