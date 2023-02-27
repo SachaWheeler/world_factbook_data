@@ -2,13 +2,12 @@ import glob
 import pprint
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
 import itertools
 
 
 data_files = [file for file in glob.glob("data/*.csv")]
-# pprint.pprint(data_files)
 cols = [name.split("/")[1].split(".")[0] for name in data_files]
-#pprint.pprint(cols)
 
 combined_df = None
 for file in data_files:
@@ -25,16 +24,15 @@ for file in data_files:
         continue
 
     combined_df = pd.merge(combined_df, df, on='name', how='outer')
-    # dfs.append(df)
 
-print(combined_df)
+df = combined_df
+print(df)
 
 col_combinations = list(itertools.combinations(cols, 2))
 # pprint.pprint(col_combinations)
 
 results = {}
 for col1, col2 in col_combinations:
-    # print(combined_df[col1].apply(type))
     try:
         corr = combined_df[col1].corr(combined_df[col2])
     except Exception as e:
@@ -42,6 +40,15 @@ for col1, col2 in col_combinations:
         print(col1, col2)
         print(combined_df[col1], combined_df[col2])
         break
+    if corr >= 0.9 or corr <= -0.9:
+        pass
+    if True:
+        df.plot.scatter(
+                x=col1,
+                y=col2,
+                s=50)
+        plt.show()
+        plt.close()
 
     # print(f"correlation between {col1} and {col2}: {corr:.2f}")
     results[(col1, col2)] = float(f"{corr:.2f}")
@@ -49,17 +56,23 @@ for col1, col2 in col_combinations:
 # pprint.pprint(results)
 # sorted_dict = dict(sorted(results.items(), key=lambda item: item[1]))
 sorted_dict = [(k, results[k]) for k in sorted(results, key=results.get, reverse=True)]
-
 # pprint.pprint(sorted_dict)
+# exit(0)
+
 # print(combined_df.corrwith(combined_df, axis=1))
 
 
-ax1 = combined_df.plot.scatter(
-        x='education_expenditures',
-        y='birth_rate')
+df.plot.scatter(
+        x='infant_mortality_rate',
+        y='population',
+        s=50)
+plt.show()
+plt.close()
+
+print("Done.")
 
 
-exit(0)
+# exit(0)
 
 """
 ax1 = df.plot.scatter(
