@@ -18,7 +18,6 @@ for file in data_files:
             converters={'value': lambda s: float(s.replace(',', '').replace('$', ''))},
             thousands=r',')
 
-    # print(os.path.splitext(file)[0].split("/")[1])
     df.columns = df.columns.str.strip()
     df = df[['name', 'value']].rename({'value': os.path.splitext(file)[0].split("/")[1]}, axis=1)
     if combined_df is None:
@@ -29,14 +28,14 @@ for file in data_files:
 
 def region_code(row):
     region = row['region']
-    colours = ['red','orange','yellow','green','lightblue','indigo','violet','black','pink','grey']
+    colours = ['coral','orange','yellow','limegreen','deepskyblue','violet','deeppink','turquoise','tan','indianred']
     regions = [
         'South Asia', 'Africa', 'Middle East', 'Central America and the Caribbean',
         'East and Southeast Asia', 'Central Asia', 'Australia and Oceania',
         'South America', 'Europe', 'North America' ]
     if region in regions:
         return colours[regions.index(region)]
-    return "white"
+    return "gold"
 
 # add regions etc.
 region_df = pd.read_csv("more/regions.csv", usecols = ['name', 'region'])
@@ -72,11 +71,8 @@ for col1, col2 in col_combinations:
     # print(f"correlation between {col1} and {col2}: {corr:.2f}")
     results[(col1, col2)] = float(f"{corr:.2f}")
 
-# pprint.pprint(results)
-# sorted_dict = dict(sorted(results.items(), key=lambda item: item[1]))
+
 sorted_dict = [(k, results[k]) for k in sorted(results, key=results.get, reverse=True)]
-# pprint.pprint(sorted_dict)
-# exit(0)
 
 print("Done.")
 
