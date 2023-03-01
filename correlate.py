@@ -6,6 +6,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 import itertools
+from constants import COLOURS, REGIONS
 
 
 data_files = [file for file in glob.glob("data/*.csv")]
@@ -28,13 +29,8 @@ for file in data_files:
 
 def region_code(row):
     region = row['region']
-    colours = ['coral','orange','yellow','limegreen','deepskyblue','violet','deeppink','turquoise','tan','indianred']
-    regions = [
-        'South Asia', 'Africa', 'Middle East', 'Central America and the Caribbean',
-        'East and Southeast Asia', 'Central Asia', 'Australia and Oceania',
-        'South America', 'Europe', 'North America' ]
-    if region in regions:
-        return colours[regions.index(region)]
+    if region in REGIONS:
+        return COLOURS[REGIONS.index(region)]
     return "gold"
 
 # add regions etc.
@@ -47,6 +43,7 @@ df['region_code'] = df.apply(lambda x : region_code(x), axis=1)
 col_combinations = list(itertools.combinations(cols, 2))
 random.shuffle(col_combinations)
 
+THRESHOLD = 0.2
 results = {}
 for col1, col2 in col_combinations:
     try:
@@ -56,6 +53,8 @@ for col1, col2 in col_combinations:
         print(col1, col2)
         print(df[col1], df[col2])
         break
+    if corr > -THRESHOLD and corr < THRESHOLD:
+        continue
     ax = df.plot.scatter(
             title=f'{col2} vs {col1}\ncorrelation: {corr:.2f}',
             x=col1,
