@@ -12,15 +12,25 @@ from constants import COLOURS, REGIONS
 data_files = [file for file in glob.glob("data/*.csv")]
 cols = [name.split("/")[1].split(".")[0] for name in data_files]
 
+SPEARMAN = True
+if SPEARMAN:
+    METHOD = 'spearman'
+    VALUE_COL = 'ranking'
+    CONVERTERS = None
+else:
+    METHOD = 'pearson'
+    VALUE_COL = 'value'
+    CONVERTERS = {VALUE_COL: lambda s: float(s.replace(',', '').replace('$', ''))}
+
 combined_df = None
 for file in data_files:
     df = pd.read_csv(file,
-            usecols = ['name', 'value'],
-            converters={'value': lambda s: float(s.replace(',', '').replace('$', ''))},
+            usecols = ['name', VALUE_COL],
+            converters=CONVERTERS,
             thousands=r',')
 
     df.columns = df.columns.str.strip()
-    df = df[['name', 'value']].rename({'value': os.path.splitext(file)[0].split("/")[1]}, axis=1)
+    df = df[['name', VALUE_COL]].rename({VALUE_COL: os.path.splitext(file)[0].split("/")[1]}, axis=1)
     if combined_df is None:
         combined_df = df
         continue
@@ -28,6 +38,7 @@ for file in data_files:
     combined_df = pd.merge(combined_df, df, on='name', how='outer')
 
 def region_code(row):
+    # print(row)
     region = row['region']
     if region in REGIONS:
         return COLOURS[REGIONS.index(region)]
@@ -43,20 +54,28 @@ df['region_code'] = df.apply(lambda x : region_code(x), axis=1)
 col_combinations = list(itertools.combinations(cols, 2))
 random.shuffle(col_combinations)
 
-THRESHOLD = 0.2
+THRESHOLD = 0.8
 results = {}
 for col1, col2 in col_combinations:
     try:
-        corr = df[col1].corr(df[col2])
+        corr = df[col1].corr(df[col2], method=METHOD)
     except Exception as e:
-        print(e)
-        print(col1, col2)
-        print(df[col1], df[col2])
+        # print(e)
+        # print(col1, col2)
+        # print(df[col1], df[col2])
         break
     if corr > -THRESHOLD and corr < THRESHOLD:
         continue
-    ax = df.plot.scatter(
-            title=f'{col2} vs {col1}\ncorrelation: {corr:.2f}',
+    if SPEARMAN:
+        ax = df.plot.scatter(
+            title=f'{col2} vs {col1}\n Ranking correlation: {corr:.2f}',
+            x=col1,
+            y=col2,
+            c=df.region_code,
+            figsize=(10,10))
+    else:
+        ax = df.plot.scatter(
+            title=f'{col2} vs {col1}\nABS Value correlation: {corr:.2f}',
             x=col1,
             y=col2,
             c=df.region_code,
