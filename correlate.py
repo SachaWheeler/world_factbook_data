@@ -70,6 +70,11 @@ THRESHOLD = 0.8
 results = {}
 for col1, col2 in col_combinations:
     # print(col1, col2)
+    TITLE = f"{col2} vs {col1}"
+    CHART_FILENAME = "charts/" + TITLE.replace(' ', '_') + ".png"
+    if os.path.isfile(CHART_FILENAME):
+        print(f"skipping {TITLE}")
+        continue
     col1_r = col1 + "_r"
     col2_r = col2 + "_r"
     try:
@@ -83,9 +88,9 @@ for col1, col2 in col_combinations:
     if (corr1 > -THRESHOLD and corr1 < THRESHOLD) and  \
        (corr2 > -THRESHOLD and corr2 < THRESHOLD):
         continue
+    print(f"processing {TITLE}")
 
     fig = plt.figure(figsize=(14,8))
-    TITLE = f"{col2} vs {col1}"
     fig.suptitle(TITLE, fontsize=12)
     ax1 = fig.add_subplot(121)
     ax2 = fig.add_subplot(122)
@@ -115,16 +120,15 @@ for col1, col2 in col_combinations:
     for idx, row in df.iterrows():
         ax1.annotate(row['name'], (row[col1], row[col2]), fontsize=8 )
         ax2.annotate(row['name'], (row[col1_r], row[col2_r]), fontsize=8 )
-    plt.show()
-    fig.savefig("charts/"+ TITLE.replace(' ', '_') + ".png", dpi=fig.dpi)
+    # plt.show()
+    fig.savefig(CHART_FILENAME, dpi=fig.dpi)
     plt.close()
-    exit(0)
 
-    # print(f"correlation between {col1} and {col2}: {corr:.2f}")
-    results[(col1, col2)] = float(f"{corr:.2f}")
+    results[(col1, col2)] = float(max(abs(corr1), abs(corr2)))
 
 
 sorted_dict = [(k, results[k]) for k in sorted(results, key=results.get, reverse=True)]
+pprint.pprint(sorted_dict)
 
 print("Done.")
 
