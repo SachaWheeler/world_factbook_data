@@ -31,15 +31,18 @@ for file in data_files:
             usecols = ['name', 'value', 'ranking'],
             converters = {
                 'value': lambda s: float(s.replace(',', '').replace('$', '')),
-                'rating': lambda s: int(s)
-            }
+                'ranking': lambda s: int(s)
+            },
             thousands=r',')
 
     df.columns = df.columns.str.strip()
-    df = df[['name', 'value', 'rating']].rename(
+    df = df[['name', 'value', 'ranking']].rename(
         {'value': col_name,
-         'rating': col_name + "_rt"
+         'ranking': col_name + "_r"
         }, axis=1)
+    # reverse the ranking
+    # df[col_name + "_r"] = range(len(df), 0, -1)
+    # df.drop('ranking', axis=1)
     if combined_df is None:
         combined_df = df
         continue
@@ -61,39 +64,61 @@ df['region_code'] = df.apply(lambda x : region_code(x), axis=1)
 
 
 col_combinations = list(itertools.combinations(cols, 2))
-random.shuffle(col_combinations)
+# random.shuffle(col_combinations)
 
 THRESHOLD = 0.8
 results = {}
 for col1, col2 in col_combinations:
+    # print(col1, col2)
+    col1_r = col1 + "_r"
+    col2_r = col2 + "_r"
     try:
-        corr = df[col1].corr(df[col2], method=METHOD)
+        corr1 = df[col1].corr(df[col2], method='pearson')
+        corr2 = df[col1_r].corr(df[col2_r], method='spearman')
     except Exception as e:
         # print(e)
         # print(col1, col2)
         # print(df[col1], df[col2])
         break
-    if corr > -THRESHOLD and corr < THRESHOLD:
+    if (corr1 > -THRESHOLD and corr1 < THRESHOLD) and  \
+       (corr2 > -THRESHOLD and corr2 < THRESHOLD):
         continue
-    if SPEARMAN:
-        ax = df.plot.scatter(
-            title=f'{col2} vs {col1}\n Ranking correlation: {corr:.2f}',
-            x=col1,
-            y=col2,
-            c=df.region_code,
-            figsize=(10,10))
-    else:
-        ax = df.plot.scatter(
-            title=f'{col2} vs {col1}\nABS Value correlation: {corr:.2f}',
-            x=col1,
-            y=col2,
-            c=df.region_code,
-            s=df.population // 1_000_000,
-            figsize=(10,10))
+
+    fig = plt.figure(figsize=(14,8))
+    TITLE = f"{col2} vs {col1}"
+    fig.suptitle(TITLE, fontsize=12)
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122)
+    # Value correlation
+    ax1.scatter(
+        df[col1],
+        df[col2],
+        c=df.region_code,
+        s=df.population // 1_000_000
+        )
+    ax1.set_title(f'ABS: c={corr1:.2f}')
+    ax1.set_xlabel(col1)
+    ax1.set_ylabel(col2)
+
+    # Raking correlation
+    ax2.scatter(
+        df[col1_r],
+        df[col2_r],
+        c=df.region_code
+    )
+    ax2.set_title(f'RANK: c={corr2:.2f}')
+    ax2.set_xlabel(col1_r)
+    ax2.set_ylabel(col2_r)
+    ax2.invert_xaxis()
+    ax2.invert_yaxis()
+
     for idx, row in df.iterrows():
-        ax.annotate(row['name'], (row[col1], row[col2]), fontsize=8 )
+        ax1.annotate(row['name'], (row[col1], row[col2]), fontsize=8 )
+        ax2.annotate(row['name'], (row[col1_r], row[col2_r]), fontsize=8 )
     plt.show()
+    fig.savefig("charts/"+ TITLE.replace(' ', '_') + ".png", dpi=fig.dpi)
     plt.close()
+    exit(0)
 
     # print(f"correlation between {col1} and {col2}: {corr:.2f}")
     results[(col1, col2)] = float(f"{corr:.2f}")
