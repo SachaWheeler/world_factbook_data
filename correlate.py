@@ -99,17 +99,20 @@ for col1, col2 in col_combinations:
         df[col1],
         df[col2],
         c=df.region_code,
-        s=df.population // 1_000_000
+        s=df.population // 2_000_000,
         )
     ax1.set_title(f'ABS: c={corr1:.2f}')
     ax1.set_xlabel(col1)
     ax1.set_ylabel(col2)
 
-    # Raking correlation
+    s = lambda x: len(df) - x
+    # Ranking correlation
     ax2.scatter(
         df[col1_r],
         df[col2_r],
-        c=df.region_code
+        c=df.region_code,
+        s=df.population // 5_000_000 + 30,
+        # s=s(df.population_r)  #  * 0.8,
     )
     ax2.set_title(f'RANK: c={corr2:.2f}')
     ax2.set_xlabel(col1_r)
@@ -123,7 +126,6 @@ for col1, col2 in col_combinations:
     # plt.show()
     fig.savefig(CHART_FILENAME, dpi=fig.dpi)
     plt.close()
-
 
 sorted_dict = [(k, results[k]) for k in sorted(results, key=results.get, reverse=True)]
 pprint.pprint(sorted_dict)
