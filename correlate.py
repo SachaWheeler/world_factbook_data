@@ -66,28 +66,28 @@ df['region_code'] = df.apply(lambda x : region_code(x), axis=1)
 col_combinations = list(itertools.combinations(cols, 2))
 # random.shuffle(col_combinations)
 
-THRESHOLD = 0.8
+THRESHOLD = 0.75
 results = {}
 for col1, col2 in col_combinations:
     # print(col1, col2)
     TITLE = f"{col2} vs {col1}"
     CHART_FILENAME = "charts/" + TITLE.replace(' ', '_') + ".png"
-    if os.path.isfile(CHART_FILENAME):
-        print(f"skipping {TITLE}")
-        continue
+
     col1_r = col1 + "_r"
     col2_r = col2 + "_r"
-    try:
-        corr1 = df[col1].corr(df[col2], method='pearson')
-        corr2 = df[col1_r].corr(df[col2_r], method='spearman')
-    except Exception as e:
-        # print(e)
-        # print(col1, col2)
-        # print(df[col1], df[col2])
-        break
+
+    corr1 = df[col1].corr(df[col2], method='pearson')
+    corr2 = df[col1_r].corr(df[col2_r], method='spearman')
+
     if (corr1 > -THRESHOLD and corr1 < THRESHOLD) and  \
        (corr2 > -THRESHOLD and corr2 < THRESHOLD):
         continue
+
+    # score the correlation
+    results[(col1, col2)] = float(max(abs(corr1), abs(corr2)))
+    if os.path.isfile(CHART_FILENAME): # skip if chart exists
+        continue
+
     print(f"processing {TITLE}")
 
     fig = plt.figure(figsize=(14,8))
@@ -123,8 +123,6 @@ for col1, col2 in col_combinations:
     # plt.show()
     fig.savefig(CHART_FILENAME, dpi=fig.dpi)
     plt.close()
-
-    results[(col1, col2)] = float(max(abs(corr1), abs(corr2)))
 
 
 sorted_dict = [(k, results[k]) for k in sorted(results, key=results.get, reverse=True)]
