@@ -11,6 +11,8 @@ from constants import COLOURS, REGIONS
 
 data_files = [file for file in glob.glob("data/*.csv")]
 cols = [name.split("/")[1].split(".")[0] for name in data_files]
+# print(cols)
+# exit(0)
 
 SPEARMAN = True
 if SPEARMAN:
@@ -24,13 +26,20 @@ else:
 
 combined_df = None
 for file in data_files:
+    col_name = os.path.splitext(file)[0].split("/")[1]
     df = pd.read_csv(file,
-            usecols = ['name', VALUE_COL],
-            converters=CONVERTERS,
+            usecols = ['name', 'value', 'ranking'],
+            converters = {
+                'value': lambda s: float(s.replace(',', '').replace('$', '')),
+                'rating': lambda s: int(s)
+            }
             thousands=r',')
 
     df.columns = df.columns.str.strip()
-    df = df[['name', VALUE_COL]].rename({VALUE_COL: os.path.splitext(file)[0].split("/")[1]}, axis=1)
+    df = df[['name', 'value', 'rating']].rename(
+        {'value': col_name,
+         'rating': col_name + "_rt"
+        }, axis=1)
     if combined_df is None:
         combined_df = df
         continue
