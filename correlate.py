@@ -12,17 +12,6 @@ from constants import COLOURS, REGIONS
 data_files = [file for file in glob.glob("data/*.csv")]
 cols = [name.split("/")[1].split(".")[0] for name in data_files]
 # print(cols)
-# exit(0)
-
-SPEARMAN = True
-if SPEARMAN:
-    METHOD = 'spearman'
-    VALUE_COL = 'ranking'
-    CONVERTERS = None
-else:
-    METHOD = 'pearson'
-    VALUE_COL = 'value'
-    CONVERTERS = {VALUE_COL: lambda s: float(s.replace(',', '').replace('$', ''))}
 
 combined_df = None
 for file in data_files:
@@ -40,9 +29,7 @@ for file in data_files:
         {'value': col_name,
          'ranking': col_name + "_r"
         }, axis=1)
-    # reverse the ranking
-    # df[col_name + "_r"] = range(len(df), 0, -1)
-    # df.drop('ranking', axis=1)
+
     if combined_df is None:
         combined_df = df
         continue
@@ -101,6 +88,16 @@ for col1, col2 in col_combinations:
         c=df.region_code,
         s=df.population // 2_000_000,
         )
+    """
+    b, a = np.polyfit(df[col1], df[col2], deg=1)
+
+    # Create sequence of 100 numbers from 0 to 100
+    xseq = np.linspace(0, 10, num=len(df)-1)
+
+    # Plot regression line
+    ax1.plot(xseq, a + b * xseq, color="k", lw=2.5)
+    """
+
     ax1.set_title(f'ABS: c={corr1:.2f}')
     ax1.set_xlabel(col1)
     ax1.set_ylabel(col2)
