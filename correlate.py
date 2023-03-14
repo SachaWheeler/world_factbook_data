@@ -88,16 +88,6 @@ for col1, col2 in col_combinations:
         c=df.region_code,
         s=df.population // 2_000_000,
         )
-    """
-    b, a = np.polyfit(df[col1], df[col2], deg=1)
-
-    # Create sequence of 100 numbers from 0 to 100
-    xseq = np.linspace(0, 10, num=len(df)-1)
-
-    # Plot regression line
-    ax1.plot(xseq, a + b * xseq, color="k", lw=2.5)
-    """
-
     ax1.set_title(f'ABS: c={corr1:.2f}')
     ax1.set_xlabel(col1)
     ax1.set_ylabel(col2)
